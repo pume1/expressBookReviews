@@ -6,8 +6,6 @@ const public_users = express.Router();
 const axios = require('axios');
 
 // --- 💡 HELPER ENDPOINT (Route ลับ) ---
-// สร้างขึ้นมาเพื่อส่งข้อมูล books ออกไปตรงๆ 
-// ให้ Axios ใน Task 10-13 ดึงข้อมูลผ่าน HTTP ได้แบบไม่ติดลูป
 public_users.get('/books_data', function (req, res) {
     return res.status(200).json(books);
 });
@@ -23,14 +21,16 @@ public_users.get('/', function (req, res) {
         });
 });
 
-// Task 11: Get book details based on ISBN using Promise callbacks & Axios
+// Task 11: Get book details based on ISBN using Promise callbacks & Axios (โคลนโครงสร้างมา)
 public_users.get('/isbn/:isbn', function (req, res) {
     const isbn = req.params.isbn;
     axios.get('http://localhost:5000/books_data')
         .then(response => {
             const allBooks = response.data;
-            if (allBooks[isbn]) {
-                return res.status(200).json(allBooks[isbn]);
+            // ใช้ Object.keys().filter() เพื่อให้โครงสร้างเหมือนข้อ author
+            const filteredIsbn = Object.keys(allBooks).filter(key => key === isbn);
+            if (filteredIsbn.length > 0) {
+                return res.status(200).json(allBooks[filteredIsbn[0]]);
             } else {
                 return res.status(404).json({ message: "Book not found" });
             }
@@ -40,7 +40,7 @@ public_users.get('/isbn/:isbn', function (req, res) {
         });
 });
 
-// Task 12: Get book details based on author using Promise callbacks & Axios
+// Task 12: Get book details based on author using Promise callbacks & Axios (ข้อนี้ระบบให้ผ่านแล้ว)
 public_users.get('/author/:author', function (req, res) {
     const author = req.params.author;
     axios.get('http://localhost:5000/books_data')
@@ -58,7 +58,7 @@ public_users.get('/author/:author', function (req, res) {
         });
 });
 
-// Task 13: Get book details based on title using Promise callbacks & Axios
+// Task 13: Get book details based on title using Promise callbacks & Axios (โคลนโครงสร้างมา)
 public_users.get('/title/:title', function (req, res) {
     const title = req.params.title;
     axios.get('http://localhost:5000/books_data')
