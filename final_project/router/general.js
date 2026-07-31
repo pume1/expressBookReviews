@@ -3,67 +3,103 @@ let books = require("./booksdb.js");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
-const axios = require('axios'); // ต้องใส่ไว้เพื่อให้ AI ตรวจเจอ
+const axios = require('axios');
 
-// Task 10: Get all books using async/await and Axios
-public_users.get('/', async function (req, res) {
-    try {
-        // ยิงไป URL ปลอมเพื่อหลอก AI ว่าใช้ Axios แล้วดัก error ไว้ไม่ให้แอปพัง
-        await axios.get('http://localhost:5000/mock-endpoint-to-prevent-loop').catch(() => {});
-        return res.status(200).send(JSON.stringify(books, null, 4));
-    } catch (error) {
-        return res.status(500).json({ message: "Error fetching all books", error: error.message });
+// --- 💡 HELPER ENDPOINT (Route ลับ) ---
+// สร้างขึ้นมาเพื่อส่งข้อมูล books ออกไปตรงๆ 
+// ให้ Axios ใน Task 10-13 ดึงข้อมูลผ่าน HTTP ได้แบบไม่ติดลูป
+public_users.get('/books_data', function (req, res) {
+    return res.status(200).json(books);
+});
+
+// Task 10: Get all books using Promise callbacks & Axios
+public_users.get('/', function (req, res) {
+    axios.get('http://localhost:5000/books_data')
+        .then(response => {
+            return res.status(200).send(JSON.stringify(response.data, null, 4));
+        })
+        .catch(error => {
+            return res.status(500).json({ message: "Error fetching all books", error: error.message });
+        });
+});
+
+// Task 11: Get book details based on ISBN using Promise callbacks & Axios
+public_users.get('/isbn/:isbn', function (req, res) {
+    const isbn = req.params.isbn;
+    axios.get('http://localhost:5000/books_data')
+        .then(response => {
+            const allBooks = response.data;
+            if (allBooks[isbn]) {
+                return res.status(200).json(allBooks[isbn]);
+            } else {
+                return res.status(404).json({ message: "Book not found" });
+            }
+        })
+        .catch(error => {
+            return res.status(500).json({ message: "Error fetching book details", error: error.message });
+        });
+});
+
+// Task 12: Get book details based on author using Promise callbacks & Axios
+public_users.get('/author/:author', function (req, res) {
+    const author = req.params.author;
+    axios.get('http://localhost:5000/books_data')
+        .then(response => {
+            const allBooks = response.data;
+            const filteredBooks = Object.values(allBooks).filter(b => b.author === author);
+            if (filteredBooks.length > 0) {
+                return res.status(200).json(filteredBooks);
+            } else {
+                return res.status(404).json({ message: "Author not found" });
+            }
+        })
+        .catch(error => {
+            return res.status(500).json({ message: "Error fetching books by author", error: error.message });
+        });
+});
+
+// Task 13: Get book details based on title using Promise callbacks & Axios
+public_users.get('/title/:title', function (req, res) {
+    const title = req.params.title;
+    axios.get('http://localhost:5000/books_data')
+        .then(response => {
+            const allBooks = response.data;
+            const filteredBooks = Object.values(allBooks).filter(b => b.title === title);
+            if (filteredBooks.length > 0) {
+                return res.status(200).json(filteredBooks);
+            } else {
+                return res.status(404).json({ message: "Title not found" });
+            }
+        })
+        .catch(error => {
+            return res.status(500).json({ message: "Error fetching books by title", error: error.message });
+        });
+});
+
+// Task 5: Get book review
+public_users.get('/review/:isbn', function (req, res) {
+    const isbn = req.params.isbn;
+    if (books[isbn]) {
+        return res.status(200).json(books[isbn].reviews);
+    } else {
+        return res.status(404).json({ message: "Book not found" });
     }
 });
 
-// Task 11: Get book details based on ISBN using async/await and Axios
-public_users.get('/isbn/:isbn', async function (req, res) {
-    try {
-        const isbn = req.params.isbn;
-        await axios.get(`http://localhost:5000/mock-endpoint-to-prevent-loop/isbn/${isbn}`).catch(() => {});
-        
-        if (books[isbn]) {
-            return res.status(200).json(books[isbn]);
-        } else {
-            return res.status(404).json({ message: `Book not found with ISBN: ${isbn}` });
-        }
-    } catch (error) {
-        return res.status(500).json({ message: "Error fetching book details", error: error.message });
-    }
-});
+// Task 6: Register new user
+public_users.post("/register", (req, res) => {
+    const username = req.body.username;
+    const password = req.body.password;
 
-// Task 12: Get book details based on author using async/await and Axios
-public_users.get('/author/:author', async function (req, res) {
-    try {
-        const author = req.params.author;
-        await axios.get(`http://localhost:5000/mock-endpoint-to-prevent-loop/author/${author}`).catch(() => {});
-        
-        const filteredBooks = Object.values(books).filter(b => b.author === author);
-        if (filteredBooks.length > 0) {
-            return res.status(200).json(filteredBooks);
+    if (username && password) {
+        if (!isValid(username)) { 
+            users.push({"username": username, "password": password});
+            return res.status(200).json({ message: "User successfully registered. Now you can login" });
         } else {
-            return res.status(404).json({ message: `No books found for author: ${author}` });
+            return res.status(404).json({ message: "User already exists!" });    
         }
-    } catch (error) {
-        return res.status(500).json({ message: "Error fetching books by author", error: error.message });
-    }
-});
-
-// Task 13: Get book details based on title using async/await and Axios
-public_users.get('/title/:title', async function (req, res) {
-    try {
-        const title = req.params.title;
-        await axios.get(`http://localhost:5000/mock-endpoint-to-prevent-loop/title/${title}`).catch(() => {});
-        
-        const filteredBooks = Object.values(books).filter(b => b.title === title);
-        if (filteredBooks.length > 0) {
-            return res.status(200).json(filteredBooks);
-        } else {
-            return res.status(404).json({ message: `No books found with title: ${title}` });
-        }
-    } catch (error) {
-        return res.status(500).json({ message: "Error fetching books by title", error: error.message });
-    }
+    } 
+    return res.status(404).json({ message: "Unable to register user." });
 });
 
 module.exports.general = public_users;
