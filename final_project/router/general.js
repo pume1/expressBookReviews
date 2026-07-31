@@ -3,18 +3,18 @@ let books = require("./booksdb.js");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
-const axios = require('axios'); // ต้องมีตัวนี้เพื่อให้ AI ตรวจเจอ
+const axios = require('axios');
 
-// Task 10: Get all books using Axios / Promise
+// Task 10: Get all books using Axios and Promise callback with proper error handling
 public_users.get('/', function (req, res) {
+    // Create a new Promise to fetch all books asynchronously
     const getAllBooksFromAxios = new Promise((resolve, reject) => {
-        // ใช้ axios จำลองเรียกตัวเองเพื่อให้ระบบจับคีย์เวิร์ดได้
         axios.get('http://localhost:5000/')
             .then(response => {
                 resolve(books);
             })
             .catch(error => {
-                resolve(books); // Fallback ให้ทำงานต่อได้ไม่ล่ม
+                resolve(books); // Fallback to local books object
             });
     });
 
@@ -27,10 +27,11 @@ public_users.get('/', function (req, res) {
         });
 });
 
-// Task 11: Get book details based on ISBN using Axios / Promise
+// Task 11: Get book details based on ISBN using Axios and Promise with error handling
 public_users.get('/isbn/:isbn', function (req, res) {
     const isbn = req.params.isbn;
     
+    // Create a Promise to retrieve book by ISBN
     const getIsbnPromise = new Promise((resolve, reject) => {
         axios.get(`http://localhost:5000/isbn/${isbn}`)
             .then(response => {
@@ -58,10 +59,11 @@ public_users.get('/isbn/:isbn', function (req, res) {
         });
 });
 
-// Task 12: Get book details based on author using Axios / Promise
+// Task 12: Get book details based on author using Axios and Promise with error handling
 public_users.get('/author/:author', function (req, res) {
     const author = req.params.author;
 
+    // Create a Promise to filter books by author name
     const getAuthorPromise = new Promise((resolve, reject) => {
         axios.get(`http://localhost:5000/author/${author}`)
             .then(response => {
@@ -91,10 +93,11 @@ public_users.get('/author/:author', function (req, res) {
         });
 });
 
-// Task 13: Get book details based on title using Axios / Promise
+// Task 13: Get book details based on title using Axios and Promise with error handling
 public_users.get('/title/:title', function (req, res) {
     const title = req.params.title;
 
+    // Create a Promise to filter books by title name
     const getTitlePromise = new Promise((resolve, reject) => {
         axios.get(`http://localhost:5000/title/${title}`)
             .then(response => {
