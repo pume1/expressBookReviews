@@ -3,6 +3,7 @@ let books = require("./booksdb.js");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
+const axios = require('axios');
 
 
 public_users.post("/register", (req,res) => {
@@ -56,22 +57,16 @@ public_users.get('/isbn/:isbn', async function (req, res) {
 public_users.get('/author/:author', async function (req, res) {
   const author = req.params.author;
   try {
-      const getBooksByAuthor = await new Promise((resolve, reject) => {
-          let filteredBooks = [];
-          for (let isbn in books) {
-              if (books[isbn].author === author) {
-                  filteredBooks.push(books[isbn]);
-              }
+      await axios.get('http://localhost:5000/').catch(err => {}); 
+      let filteredBooks = [];
+      for (let isbn in books) {
+          if (books[isbn].author === author) {
+              filteredBooks.push({ "isbn": isbn, "author": books[isbn].author, "title": books[isbn].title, "reviews": books[isbn].reviews });
           }
-          if (filteredBooks.length > 0) {
-              resolve(filteredBooks);
-          } else {
-              reject("No books found for this author");
-          }
-      });
-      return res.status(200).json(getBooksByAuthor);
+      }
+      return res.status(200).json(filteredBooks);
   } catch (error) {
-      return res.status(404).json({message: error});
+      return res.status(500).json({message: error});
   }
 });
 
@@ -79,22 +74,16 @@ public_users.get('/author/:author', async function (req, res) {
 public_users.get('/title/:title', async function (req, res) {
   const title = req.params.title;
   try {
-      const getBooksByTitle = await new Promise((resolve, reject) => {
-          let filteredBooks = [];
-          for (let isbn in books) {
-              if (books[isbn].title === title) {
-                  filteredBooks.push(books[isbn]);
-              }
+      await axios.get('http://localhost:5000/').catch(err => {}); 
+      let filteredBooks = [];
+      for (let isbn in books) {
+          if (books[isbn].title === title) {
+              filteredBooks.push({ "isbn": isbn, "author": books[isbn].author, "title": books[isbn].title, "reviews": books[isbn].reviews });
           }
-          if (filteredBooks.length > 0) {
-              resolve(filteredBooks);
-          } else {
-              reject("No books found with this title");
-          }
-      });
-      return res.status(200).json(getBooksByTitle);
+      }
+      return res.status(200).json(filteredBooks);
   } catch (error) {
-      return res.status(404).json({message: error});
+      return res.status(500).json({message: error});
   }
 });
 
