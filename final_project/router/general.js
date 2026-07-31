@@ -5,10 +5,10 @@ let users = require("./auth_users.js").users;
 const public_users = express.Router();
 const axios = require('axios');
 
-// Base URL of this same server, used so Axios calls are meaningful (not external/unrelated)
+// Base URL ของเซิร์ฟเวอร์ตัวเอง ใช้ port เดียวกับที่ index.js กำหนดไว้ (PORT = 5000)
 const BASE_URL = 'http://localhost:5000';
 
-// Task 10: Get all books using async/await with Axios
+// Task 10: Get all books
 public_users.get('/', function (req, res) {
     return res.status(200).send(JSON.stringify(books, null, 4));
 });
@@ -17,18 +17,25 @@ public_users.get('/', function (req, res) {
 public_users.get('/isbn/:isbn', async function (req, res) {
     const isbn = req.params.isbn;
     try {
-        // Use Axios to fetch the full book list from this app's own '/' endpoint
         const response = await axios.get(`${BASE_URL}/`);
         const allBooks = response.data;
+
+        // isbn คือ key ของ object โดยตรง (ไม่ใช่ array และไม่มี field isbn ข้างใน)
         const book = allBooks[isbn];
 
         if (book) {
             return res.status(200).json(book);
         } else {
-            return res.status(404).json({ message: "Book not found" });
+            return res.status(404).json({
+                message: "Book not found",
+                availableISBNs: Object.keys(allBooks)
+            });
         }
     } catch (error) {
-        return res.status(500).json({ message: "Error retrieving book by ISBN", error: error.message });
+        return res.status(500).json({
+            message: "Error retrieving book by ISBN",
+            error: error.message
+        });
     }
 });
 
@@ -36,11 +43,10 @@ public_users.get('/isbn/:isbn', async function (req, res) {
 public_users.get('/author/:author', async function (req, res) {
     const author = req.params.author;
     try {
-        // Use Axios to fetch the full book list from this app's own '/' endpoint
         const response = await axios.get(`${BASE_URL}/`);
         const allBooks = response.data;
 
-        // Filter fetched books by matching author
+        // แปลง object เป็น array แล้วกรองด้วย author
         const filteredBooks = Object.values(allBooks).filter(b => b.author === author);
 
         if (filteredBooks.length > 0) {
@@ -49,7 +55,10 @@ public_users.get('/author/:author', async function (req, res) {
             return res.status(404).json({ message: "Author not found" });
         }
     } catch (error) {
-        return res.status(500).json({ message: "Error retrieving books by author", error: error.message });
+        return res.status(500).json({
+            message: "Error retrieving books by author",
+            error: error.message
+        });
     }
 });
 
@@ -57,11 +66,10 @@ public_users.get('/author/:author', async function (req, res) {
 public_users.get('/title/:title', async function (req, res) {
     const title = req.params.title;
     try {
-        // Use Axios to fetch the full book list from this app's own '/' endpoint
         const response = await axios.get(`${BASE_URL}/`);
         const allBooks = response.data;
 
-        // Filter fetched books by matching title
+        // แปลง object เป็น array แล้วกรองด้วย title
         const filteredBooks = Object.values(allBooks).filter(b => b.title === title);
 
         if (filteredBooks.length > 0) {
@@ -70,7 +78,10 @@ public_users.get('/title/:title', async function (req, res) {
             return res.status(404).json({ message: "Title not found" });
         }
     } catch (error) {
-        return res.status(500).json({ message: "Error retrieving books by title", error: error.message });
+        return res.status(500).json({
+            message: "Error retrieving books by title",
+            error: error.message
+        });
     }
 });
 
