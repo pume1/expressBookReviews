@@ -6,79 +6,53 @@ const public_users = express.Router();
 const axios = require('axios');
 
 // =======================================================================
-// TASK 10: Get all books
+// TASK 10: Get all books using async/await and Axios
 // =======================================================================
 public_users.get('/', async function (req, res) {
     try {
-        const response = await axios.get('http://localhost:5000/api/mock/books');
+        const response = await axios.get('http://localhost:5000/books_api');
         return res.status(200).json(response.data);
     } catch (error) {
-        if (error.response) {
-            // Server responded with a status other than 2xx (e.g., Not Found)
-            return res.status(error.response.status).json({ message: "Books not found" });
-        } else if (error.request) {
-            // Request was made but no response received (Network Issue)
-            return res.status(503).json({ message: "Network issue: Service unavailable" });
-        } else {
-            return res.status(500).json({ message: "Internal server error" });
-        }
+        return res.status(500).json({ message: "Error fetching all books" });
     }
 });
 
 // =======================================================================
-// TASK 11: Get book details based on ISBN
+// TASK 11: Get book details based on ISBN using async/await and Axios
 // =======================================================================
 public_users.get('/isbn/:isbn', async function (req, res) {
     try {
         const isbn = req.params.isbn;
-        const response = await axios.get(`http://localhost:5000/api/mock/books/isbn/${isbn}`);
+        const response = await axios.get(`http://localhost:5000/books_api/isbn/${isbn}`);
         return res.status(200).json(response.data);
     } catch (error) {
-        if (error.response) {
-            return res.status(404).json({ message: "Book not found" });
-        } else if (error.request) {
-            return res.status(503).json({ message: "Network issue: Service unavailable" });
-        } else {
-            return res.status(500).json({ message: "Internal server error" });
-        }
+        return res.status(404).json({ message: "Book not found" });
     }
 });
   
 // =======================================================================
-// TASK 12: Get book details based on author
+// TASK 12: Get book details based on author using async/await and Axios
 // =======================================================================
 public_users.get('/author/:author', async function (req, res) {
     try {
         const author = req.params.author;
-        const response = await axios.get(`http://localhost:5000/api/mock/books/author/${author}`);
+        const response = await axios.get(`http://localhost:5000/books_api/author/${author}`);
         return res.status(200).json(response.data);
     } catch (error) {
-        if (error.response) {
-            return res.status(404).json({ message: "Author not found" });
-        } else if (error.request) {
-            return res.status(503).json({ message: "Network issue: Service unavailable" });
-        } else {
-            return res.status(500).json({ message: "Internal server error" });
-        }
+        return res.status(404).json({ message: "Author not found" });
     }
 });
 
 // =======================================================================
-// TASK 13: Get all books based on title
+// TASK 13: Get all books based on title using async/await and Axios
 // =======================================================================
 public_users.get('/title/:title', async function (req, res) {
     try {
         const title = req.params.title;
-        const response = await axios.get(`http://localhost:5000/api/mock/books/title/${title}`);
+        const response = await axios.get(`http://localhost:5000/books_api/title/${title}`);
         return res.status(200).json(response.data);
     } catch (error) {
-        if (error.response) {
-            return res.status(404).json({ message: "Title not found" });
-        } else if (error.request) {
-            return res.status(503).json({ message: "Network issue: Service unavailable" });
-        } else {
-            return res.status(500).json({ message: "Internal server error" });
-        }
+        return res.status(404).json({ message: "Title not found" });
     }
 });
 
@@ -110,28 +84,6 @@ public_users.post("/register", (req, res) => {
         }
     } 
     return res.status(404).json({ message: "Unable to register user." });
-});
-
-// =======================================================================
-// 💡 MOCK DATA ENDPOINTS FOR AXIOS TO CONSUME
-// =======================================================================
-public_users.get('/api/mock/books', (req, res) => res.status(200).json(books));
-
-public_users.get('/api/mock/books/isbn/:isbn', (req, res) => {
-    const isbn = req.params.isbn;
-    books[isbn] ? res.status(200).json(books[isbn]) : res.status(404).json({ message: "Not found" });
-});
-
-public_users.get('/api/mock/books/author/:name', (req, res) => {
-    const name = req.params.name;
-    const matching = Object.values(books).filter(b => b.author === name);
-    matching.length > 0 ? res.status(200).json(matching) : res.status(404).json({ message: "Not found" });
-});
-
-public_users.get('/api/mock/books/title/:text', (req, res) => {
-    const text = req.params.text;
-    const matching = Object.values(books).filter(b => b.title === text);
-    matching.length > 0 ? res.status(200).json(matching) : res.status(404).json({ message: "Not found" });
 });
 
 module.exports.general = public_users;
