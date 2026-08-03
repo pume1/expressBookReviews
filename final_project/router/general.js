@@ -6,69 +6,38 @@ const public_users = express.Router();
 const axios = require('axios');
 
 // =======================================================================
-// 💡 INTERNAL API ENDPOINTS (แหล่งข้อมูลจำลอง)
-// สร้างไว้เพื่อตอบโจทย์เรื่องประสิทธิภาพ (Performance) ไม่ให้ดึงข้อมูลซ้ำซ้อน
-// =======================================================================
-public_users.get('/api/books', (req, res) => {
-    res.status(200).json(books);
-});
-
-public_users.get('/api/books/isbn/:isbn', (req, res) => {
-    const isbn = req.params.isbn;
-    if (books[isbn]) res.status(200).json(books[isbn]);
-    else res.status(404).json({ message: "Book not found" });
-});
-
-public_users.get('/api/books/author/:author', (req, res) => {
-    const author = req.params.author;
-    const matchingBooks = Object.values(books).filter(b => b.author === author);
-    if (matchingBooks.length > 0) res.status(200).json(matchingBooks);
-    else res.status(404).json({ message: "Author not found" });
-});
-
-public_users.get('/api/books/title/:title', (req, res) => {
-    const title = req.params.title;
-    const matchingBooks = Object.values(books).filter(b => b.title === title);
-    if (matchingBooks.length > 0) res.status(200).json(matchingBooks);
-    else res.status(404).json({ message: "Title not found" });
-});
-
-// =======================================================================
-// TASK 10: Get all books using async/await and Axios
+// Task 10: Get all books using async/await and Axios
 // =======================================================================
 public_users.get('/', async function (req, res) {
     try {
         const response = await axios.get('http://localhost:5000/api/books');
         return res.status(200).json(response.data);
     } catch (error) {
-        // เพิ่มการ Logging ที่เจาะจงตามที่ AI ร้องขอ
-        console.error("Error fetching all books for Task 10:", error.message);
-        return res.status(500).json({ message: "Error fetching book list" });
+        console.error('Error fetching all books:', error.message);
+        return res.status(500).json({ message: "Error fetching books" });
     }
 });
 
 // =======================================================================
-// TASK 11: Get book details based on ISBN using async/await and Axios
+// Task 11: Get book details based on ISBN using async/await and Axios
 // =======================================================================
 public_users.get('/isbn/:isbn', async function (req, res) {
     try {
         const isbn = req.params.isbn;
-        // ส่ง ISBN เข้าไปใน URL เพื่อลดปัญหาการดึงข้อมูลซ้ำซ้อน (Performance Fix)
         const response = await axios.get(`http://localhost:5000/api/books/isbn/${isbn}`);
         return res.status(200).json(response.data);
     } catch (error) {
-        console.error(`Error fetching book with ISBN ${req.params.isbn}:`, error.message);
-        return res.status(500).json({ message: "Error fetching book details" });
+        console.error(`Error fetching book by ISBN ${req.params.isbn}:`, error.message);
+        return res.status(500).json({ message: "Error fetching book by ISBN" });
     }
 });
 
 // =======================================================================
-// TASK 12: Get book details based on author using async/await and Axios
+// Task 12: Get book details based on author using async/await and Axios
 // =======================================================================
 public_users.get('/author/:author', async function (req, res) {
     try {
         const author = req.params.author;
-        // ส่ง Author เข้าไปใน URL เพื่อลดปัญหาการดึงข้อมูลซ้ำซ้อน
         const response = await axios.get(`http://localhost:5000/api/books/author/${author}`);
         return res.status(200).json(response.data);
     } catch (error) {
@@ -78,12 +47,11 @@ public_users.get('/author/:author', async function (req, res) {
 });
 
 // =======================================================================
-// TASK 13: Get book details based on title using async/await and Axios
+// Task 13: Get book details based on title using async/await and Axios
 // =======================================================================
 public_users.get('/title/:title', async function (req, res) {
     try {
         const title = req.params.title;
-        // ส่ง Title เข้าไปใน URL เพื่อลดปัญหาการดึงข้อมูลซ้ำซ้อน
         const response = await axios.get(`http://localhost:5000/api/books/title/${title}`);
         return res.status(200).json(response.data);
     } catch (error) {
@@ -93,7 +61,7 @@ public_users.get('/title/:title', async function (req, res) {
 });
 
 // =======================================================================
-// TASK 5: Get book review
+// Task 5: Get book review
 // =======================================================================
 public_users.get('/review/:isbn', function (req, res) {
     const isbn = req.params.isbn;
@@ -105,7 +73,7 @@ public_users.get('/review/:isbn', function (req, res) {
 });
 
 // =======================================================================
-// TASK 6: Register new user
+// Task 6: Register new user
 // =======================================================================
 public_users.post("/register", (req, res) => {
     const username = req.body.username;
@@ -120,6 +88,29 @@ public_users.post("/register", (req, res) => {
         }
     } 
     return res.status(404).json({ message: "Unable to register user." });
+});
+
+// =======================================================================
+// =======================================================================
+public_users.get('/api/books', (req, res) => {
+    res.status(200).json(books);
+});
+public_users.get('/api/books/isbn/:isbn', (req, res) => {
+    const isbn = req.params.isbn;
+    if (books[isbn]) res.status(200).json(books[isbn]);
+    else res.status(404).json({ message: "Book not found" });
+});
+public_users.get('/api/books/author/:author', (req, res) => {
+    const author = req.params.author;
+    const matchingBooks = Object.values(books).filter(b => b.author === author);
+    if (matchingBooks.length > 0) res.status(200).json(matchingBooks);
+    else res.status(404).json({ message: "Author not found" });
+});
+public_users.get('/api/books/title/:title', (req, res) => {
+    const title = req.params.title;
+    const matchingBooks = Object.values(books).filter(b => b.title === title);
+    if (matchingBooks.length > 0) res.status(200).json(matchingBooks);
+    else res.status(404).json({ message: "Title not found" });
 });
 
 module.exports.general = public_users;
